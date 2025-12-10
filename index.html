@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insta Post Helper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Insta Post Helper</h1>
+            <span id="page-counter">Loading...</span>
+        </header>
+
+        <main>
+            <div class="card-section">
+                <div class="image-wrapper">
+                    <img id="post-image" src="" alt="Post Image">
+                    <p class="guide-text">長押しして画像をコピー/保存</p>
+                </div>
+                <a id="download-btn" href="#" target="_blank" class="action-btn secondary">画像を別タブで開く</a>
+            </div>
+
+            <div class="caption-section">
+                <div class="caption-header">
+                    <span id="post-name">神様名</span>
+                    <button id="copy-btn" class="action-btn primary">キャプションをコピー</button>
+                </div>
+                <textarea id="caption-text" readonly></textarea>
+            </div>
+        </main>
+
+        <footer>
+            <button id="prev-btn" class="nav-btn">← 前へ</button>
+            <button id="open-insta" class="insta-btn">Instagram起動</button>
+            <button id="next-btn" class="nav-btn">次へ →</button>
+        </footer>
+    </div>
+
+    <div id="toast" class="hidden">コピーしました！</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
