@@ -1,6 +1,6 @@
 // ==========================================
 // ★ここに新しいGASのウェブアプリURLを貼り付けてください
-const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbz5Xh5Fvj59fgr98dYAWq3dGK5ZAEV0M67e6wCyS_Y1rg0p44RksNKlzeWjghXuKpS-/exec'; 
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyRYKDexL7ivCYQcb5HquY-LFsiY3PGOIS-4Jw3cdOzYYBl8RdRrDtP_m-IKH6QhDW7/exec'; 
 // ==========================================
 
 // 要素取得
@@ -20,6 +20,16 @@ const toast = document.getElementById('toast');
 let allPosts = [];
 let currentIndex = 0;
 
+// 今日の日付を "YYYY/MM/DD" 形式で取得する関数
+function getTodayString() {
+    const d = new Date();
+    const year = d.getFullYear();
+    // 月と日は1桁の場合に0を埋める (例: 1月 -> 01)
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+}
+
 // 初期化
 async function init() {
     try {
@@ -28,12 +38,27 @@ async function init() {
         
         if (data.error) throw new Error(data.error);
 
-        // データ反転（必要なら）: スプレッドシートの下に追加していくなら反転して最新を先頭にするのもあり
-        // 今回はシートの上から順に表示します
         allPosts = data;
 
         if (allPosts.length > 0) {
-            renderPost(0);
+            // 1. 今日の日付文字列を作る ("2025/12/10" など)
+            const todayStr = getTodayString();
+            
+            // 2. データの中から「Data」カラムが今日と一致するものを探す
+            // (スプレッドシートのA列ヘッダーが "Data" である前提)
+            const todayIndex = allPosts.findIndex(post => post.Data === todayStr);
+
+            if (todayIndex !== -1) {
+                // 一致する日付が見つかったら、そのインデックスを表示
+                renderPost(todayIndex);
+                showToast(`今日 (${todayStr}) の投稿を表示します`);
+            } else {
+                // 見つからなければ、とりあえず先頭(0番目)を表示
+                renderPost(0);
+                // コンソールにログを出しておく（デバッグ用）
+                console.log(`今日の日付 (${todayStr}) に一致するデータが見つかりませんでした。先頭を表示します。`);
+            }
+
         } else {
             alert('データが見つかりませんでした。スプレッドシートのヘッダーを確認してください。');
         }
@@ -51,10 +76,7 @@ function renderPost(index) {
     currentIndex = index;
     const post = allPosts[currentIndex];
 
-    // 画像表示（Google Driveの画像URL形式を調整）
-    // ※もしURLが lh3.googleusercontent... 系ならそのまま、drive.google.com...なら変換など
-    // 基本的にGASで取得した時点で表示可能なURLになっていると仮定しますが、
-    // 万が一のためGoogle DriveのView URLをImage Tag用URLへ変換するロジックを入れることも可能です。
+    // 画像表示
     imageEl.src = post.Image;
     downloadBtn.href = post.Image; // 別タブで開く用
 
@@ -63,7 +85,9 @@ function renderPost(index) {
     captionEl.value = post.Caption || '';
 
     // カウンター更新
-    counterEl.textContent = `${currentIndex + 1} / ${allPosts.length}`;
+    // 日付情報があればそれも表示すると便利かもしれません
+    const dateStr = post.Data ? ` [${post.Data}]` : '';
+    counterEl.textContent = `${currentIndex + 1} / ${allPosts.length}${dateStr}`;
 
     // ボタン状態更新
     prevBtn.disabled = currentIndex === 0;
@@ -87,11 +111,9 @@ copyBtn.addEventListener('click', async () => {
 // Instagram起動
 instaBtn.addEventListener('click', () => {
     // Instagramアプリを起動するURLスキーム
-    // iOS/Androidで挙動が違う場合がありますが、基本はアプリが開きます
     window.location.href = 'instagram://app';
     
-    // PCなどでアプリがない場合のために、少し待ってからWeb版へ遷移させる処理も可能ですが
-    // 今回はシンプルにします
+    // PCなどでアプリがない場合のために、少し待ってからWeb版へ遷移させる処理
     setTimeout(() => {
         window.open('https://www.instagram.com/', '_blank');
     }, 500);
